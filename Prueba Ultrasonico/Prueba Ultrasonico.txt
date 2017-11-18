@@ -1,0 +1,49 @@
+ #define trigPin 9
+     #define echoPin 10
+     #define led 8
+
+     #include <Filters.h>
+
+// filters out changes faster that 5 Hz.
+float filterFrequency = .3  ;
+long duracion, distancia,duracion2, distancia2 ;
+
+// create a one pole (RC) lowpass filter
+FilterOnePole lowpassFilter( LOWPASS, filterFrequency );
+FilterOnePole lowpassFilter2( LOWPASS, filterFrequency );   
+
+
+     void setup()
+        {   Serial.begin (115200);
+            pinMode(trigPin, OUTPUT);
+            pinMode(echoPin, INPUT); 
+            pinMode(led, OUTPUT);
+        }
+
+     void loop()
+        {   
+            digitalWrite(trigPin, LOW);        // Nos aseguramos de que el trigger está desactivado
+            delayMicroseconds(2);              // Para asegurarnos de que el trigger esta LOW
+            digitalWrite(trigPin, HIGH);       // Activamos el pulso de salida
+            delayMicroseconds(10);             // Esperamos 10µs. El pulso sigue active este tiempo
+            digitalWrite(trigPin, LOW);        // Cortamos el pulso y a esperar el echo
+            duracion = pulseIn(echoPin, HIGH) ;
+            duracion=lowpassFilter.input( duracion );
+            if(duracion>10000)
+              duracion=10000;
+            distancia = duracion / 2 / 29.1  ;
+        
+            digitalWrite(12, LOW);        // Nos aseguramos de que el trigger está desactivado
+            delayMicroseconds(2);              // Para asegurarnos de que el trigger esta LOW
+            digitalWrite(12, HIGH);       // Activamos el pulso de salida
+            delayMicroseconds(10);             // Esperamos 10µs. El pulso sigue active este tiempo
+            digitalWrite(12, LOW);        // Cortamos el pulso y a esperar el echo
+            duracion2 = pulseIn(13, HIGH) ;
+            duracion2=lowpassFilter2.input( duracion2 );
+            if(duracion2>10000)
+              duracion2=10000;
+            distancia2 = duracion2 / 2 / 29.1  ;
+            Serial.print(duracion);
+            Serial.print(",");
+            Serial.println(duracion2);
+        }    
